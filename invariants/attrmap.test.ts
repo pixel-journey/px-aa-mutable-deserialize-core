@@ -56,4 +56,14 @@ describe("serialize / deserialize", () => {
     assert.throws(() => deserialize(Uint8Array.of(0x03), format), /reserved/);
     assert.throws(() => deserialize(Uint8Array.of(0x04), format), /truncated/);
   });
+
+  it("round-trips int8 -1 and float 1", () => {
+    const narrow = [
+      { name: "flag", type: "int8" as const },
+      { name: "score", type: "float" as const },
+    ];
+    const bytes = serialize({ flag: -1, score: 1 }, narrow);
+    assert.deepEqual([...bytes], [0x04, 0x01, 0x05, 0x00, 0x00, 0x80, 0x3f]);
+    assert.deepEqual(deserialize(bytes, narrow), { flag: -1, score: 1 });
+  });
 });

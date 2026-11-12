@@ -5,7 +5,8 @@
  * - RESERVED = 4. Field i is prefixed by varint(i + 4).
  * - Fields follow schema order. A missing key is skipped (no bytes).
  * - A present vector is prefixed by varint(length). Length 0 is the byte 0x00.
- * - This file implements uint32, uint64, string, and uint64[] only.
+ * - This file implements uint32, uint64, string, uint64[], int8, and float.
+ *   String length 256 and vector length 64 are this file's caps, not the contract's.
  *
  * It does not call atomicassets::setassetdata. The on-chain action takes an
  * ABI map; the contract itself runs serialize() into mutable_serialized_data.
@@ -13,14 +14,14 @@
 
 export const RESERVED = 4;
 
-export type FieldType = "uint32" | "uint64" | "string" | "uint64[]";
+export type FieldType = "uint32" | "uint64" | "string" | "uint64[]" | "int8" | "float";
 
 export type FormatLine = {
   name: string;
   type: FieldType;
 };
 
-export type AttrValue = bigint | string | bigint[];
+export type AttrValue = bigint | number | string | bigint[];
 
 export type AttrMap = Readonly<Record<string, AttrValue>>;
 
@@ -64,7 +65,7 @@ function assertFormat(format: readonly FormatLine[]): void {
     if (!NAME.test(line.name)) throw new Error("bad attribute name");
     if (seen.has(line.name)) throw new Error("duplicate format name");
     seen.add(line.name);
-    if (line.type !== "uint32" && line.type !== "uint64" && line.type !== "string" && line.type !== "uint64[]") {
+    if (!["uint32", "uint64", "string", "uint64[]", "int8", "float"].includes(line.type)) {
       throw new Error("unsupported type");
     }
   }
@@ -82,6 +83,19 @@ function encodeValue(type: FieldType, value: AttrValue): number[] {
     const raw = [...new TextEncoder().encode(value)];
     if (raw.length > 256) throw new Error("string too long");
     return [...toVarint(BigInt(raw.length)), ...raw];
+  }
+  if (type === "int8") {
+    if (typeof value !== "number" || !Number.isInteger(value) || value < -128 || value > 127) {
+      throw new Error("int8 out of range");
+    }
+    const zigzagged = value < 0 ? (-1 * (value + 1)) * 2 + 1 : value * 2;
+    return toVarint(BigInt(zigzagged & 0xff));
+  }
+  if (type === "float") {
+    if (typeof value !== "number" || !Number.isFinite(value)) throw new Error("float expected");
+    const buf = new Uint8Array(4);
+    new DataView(buf.buffer).setFloat32(0, value, true);
+    return [...buf];
   }
   if (!Array.isArray(value)) throw new Error("uint64[] expected");
   if (value.length > 64) throw new Error("vector too long");
@@ -111,6 +125,18 @@ function decodeValue(type: FieldType, bytes: Uint8Array, offset: number): { valu
     if (end > bytes.length) throw new Error("truncated string");
     const value = new TextDecoder().decode(bytes.subarray(start, end));
     return { value, offset: end };
+  }
+  if (type === "int8") {
+    const read = readVarint(bytes, offset);
+    const n = Number(read.value);
+    const decoded = n % 2 === 0 ? n / 2 : -((n / 2) | 0) - 1;
+    if (decoded < -128 || decoded > 127) throw new Error("int8 out of range");
+    return { value: decoded, offset: read.offset };
+  }
+  if (type === "float") {
+    if (offset + 4 > bytes.length) throw new Error("truncated float");
+    const value = new DataView(bytes.buffer, bytes.byteOffset + offset, 4).getFloat32(0, true);
+    return { value, offset: offset + 4 };
   }
   const len = readVarint(bytes, offset);
   if (len.value > 64n) throw new Error("vector too long");

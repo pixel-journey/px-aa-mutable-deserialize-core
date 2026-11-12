@@ -6,7 +6,7 @@
 
 **One-sentence goal:** Teach the AtomicAssets byte layout: field id `varint(index + 4)`, missing keys skipped, empty `uint64[]` is the single byte `0x00`.
 
-**Real code:** `npm test`. Subset of types: `uint32`, `uint64`, `string`, `uint64[]`. Not float, ipfs, fixed-width, or zigzag integers.
+**Real code:** `npm test`. Subset of types: `uint32`, `uint64`, `string`, `uint64[]`, `int8`, and `float`. String length 256 and vector length 64 are this file's caps, not the contract's. `int8` -1 and `float` 1 together are `0401050000803f`, the same bytes as [wax-atomic-template-and-schema-explorer](https://github.com/pixel-journey/wax-atomic-template-and-schema-explorer). A full-map write that keeps siblings is [px-aa-mutable-safe-partial-updater](https://github.com/pixel-journey/px-aa-mutable-safe-partial-updater). An XP rule on top of that write is [px-aa-mutable-rpg-xp-and-leveling](https://github.com/pixel-journey/px-aa-mutable-rpg-xp-and-leveling).
 
 This repo does **not** call `atomicassets`. The chain action is:
 
