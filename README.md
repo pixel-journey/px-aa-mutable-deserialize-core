@@ -1,30 +1,27 @@
-# px-aa-mutable-deserialize-core
+# AtomicAssets mutable bytes: field ids, skips, and empty vectors
 
-> **Trust:** private educational lab (Tier B)  
 > **Stack:** layer 1 of 5 — [MUTABLE-STACK.md](https://github.com/pixel-journey/px-contract-examples-vault/blob/main/docs/MUTABLE-STACK.md)  
-> **Vault:** [px-contract-examples-vault](https://github.com/pixel-journey/px-contract-examples-vault)
+> **Catalog:** [px-contract-examples-vault](https://github.com/pixel-journey/px-contract-examples-vault)
 
-**One-sentence goal:** Teach the AtomicAssets byte layout: field id `varint(index + 4)`, missing keys skipped, empty `uint64[]` is the single byte `0x00`.
+**Goal:** Teach the AtomicAssets byte layout for mutable `ATTRIBUTE_MAP` data: field id `varint(index + 4)`, missing keys skipped, empty `uint64[]` is the single byte `0x00`.
 
-**Real code:** `npm test`. Subset of types: `uint32`, `uint64`, `string`, `uint64[]`, `int8`, and `float`. String length 256 and vector length 64 are this file's caps, not the contract's. `int8` -1 and `float` 1 together are `0401050000803f`, the same bytes as [wax-atomic-template-and-schema-explorer](https://github.com/pixel-journey/wax-atomic-template-and-schema-explorer). A full-map write that keeps siblings is [px-aa-mutable-safe-partial-updater](https://github.com/pixel-journey/px-aa-mutable-safe-partial-updater). An XP rule on top of that write is [px-aa-mutable-rpg-xp-and-leveling](https://github.com/pixel-journey/px-aa-mutable-rpg-xp-and-leveling).
+**Code under test:** `npm test`. Covered types: `uint32`, `uint64`, `string`, `uint64[]`, `int8`, and `float`. String length 256 and vector length 64 are lab caps, not contract limits. `int8` -1 and `float` 1 together encode as `0401050000803f`, matching [wax-atomic-template-and-schema-explorer](https://github.com/pixel-journey/wax-atomic-template-and-schema-explorer).
 
-This repo does **not** call `atomicassets`. The chain action is:
+This repository studies the **serialized byte vector**, not a live chain call. On WAX the action is:
 
 ```text
 setassetdata(authorized_editor, asset_owner, asset_id, new_mutable_data)
 ```
 
-AtomicAssets then runs `serialize(new_mutable_data, schema.format)` into `assets.mutable_serialized_data`. These tests cover that **byte vector**, not the action call. Ground truth: [Serialization wiki](https://github.com/pinknetworkx/atomicassets-contract/wiki/Serialization) and [contract source](https://github.com/pinknetworkx/atomicassets-contract).
+AtomicAssets then runs `serialize(new_mutable_data, schema.format)` into `assets.mutable_serialized_data`.
 
-Official links: [SOURCES.md](SOURCES.md).
-
----
+**Official sources:** [Serialization wiki](https://github.com/pinknetworkx/atomicassets-contract/wiki/Serialization), [atomicassets-contract](https://github.com/pinknetworkx/atomicassets-contract), [SOURCES.md](SOURCES.md).
 
 ## What is true (executed)
 
 | Bytes | Meaning |
 |-------|---------|
-| `04 AC 02` | field 0, uint64 **300** (wiki-style example) |
+| `04 AC 02` | field 0, uint64 **300** |
 | `05 03 54 6F 6D` | field 1 only, string `Tom` (field 0 skipped) |
 | `06 00` | field 2, **empty** `uint64[]` |
 | `06 02 01 AC 02` | field 2, `[1, 300]` |
@@ -34,7 +31,7 @@ Official links: [SOURCES.md](SOURCES.md).
 npm test
 ```
 
-## Next in the stack
+## Continue the stack
 
 | Layer | Repo |
 | --- | --- |
