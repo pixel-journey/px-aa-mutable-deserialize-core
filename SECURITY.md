@@ -1,11 +1,24 @@
-# Security notes
+# Security notes — deserialize core
 
-| Issue | Lab mitigation |
-|-------|----------------|
-| Key not in the schema | serialize refuses |
-| Id in `0..3` or past the format | deserialize refuses |
-| Truncated varint or string | refused |
-| Duplicate id in one buffer | refused |
-| Huge string or vector | caps 256 / 64 |
+This lab is a **codec**. It does not authorize editors or call `setassetdata`.
 
-The real contract trusts `schema.format` from the `schemas` table (scope = collection). A decoder that guesses types from the bytes will mis-read the asset.
+## Mitigated in the lab
+
+| Issue | Behavior |
+| --- | --- |
+| Reserved field ids 0–3 | refused |
+| Truncated value payload | refused |
+| Key not in schema format | refused on serialize |
+| Overlong string / vector (lab caps) | refused |
+
+## Production risks this lab does not cover
+
+| Risk | Mitigation elsewhere |
+| --- | --- |
+| Partial map wipe on write | [safe-partial-updater](https://github.com/pixel-journey/px-aa-mutable-safe-partial-updater) |
+| Wrong editor / collection auth | Collection authorized_editor + require_auth |
+| Type confusion (string into uint) | Schema-aware serialize; [all-primitive-types](https://github.com/pixel-journey/px-aa-mutable-all-primitive-types) |
+| Trusting client-supplied “previous” bytes | Load asset row on contract |
+| Hand-edited hex without format | Always pair bytes with schema.format |
+
+Malformed bytes should **fail closed** (throw), never invent default attribute values.

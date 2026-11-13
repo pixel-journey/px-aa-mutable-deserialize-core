@@ -1,15 +1,19 @@
 # Official sources
 
-This lab is educational TypeScript. Chain behaviour is defined by the contract and docs below.
-
 | Source | Use |
 | --- | --- |
-| [atomicassets-contract](https://github.com/pinknetworkx/atomicassets-contract) | `setassetdata`, serialize/deserialize implementation |
-| [Serialization wiki](https://github.com/pinknetworkx/atomicassets-contract/wiki/Serialization) | Field id `varint(index + 4)`, format types, ATTRIBUTE_MAP |
-| [WAX: mutable data tutorial](https://docs.wax.io/build/tutorials/howto_atomicassets/mutabledata) | Action parameters and client-side map shape |
-| [WAX: How-To AtomicAssets](https://docs.wax.io/build/tutorials/howto_atomicassets) | Standard overview on WAX |
-| [WAX API reference](https://docs.wax.io/build/api-reference/) | AtomicAssets API for reads (not a substitute for table/schema truth) |
+| [Serialization wiki](https://github.com/pinknetworkx/atomicassets-contract/wiki/Serialization) | Field id = varint(index + 4), type encodings |
+| [atomicassets-contract](https://github.com/pinknetworkx/atomicassets-contract) | `setassetdata`, serialize/deserialize entry points |
+| [WAX: Modifying mutable data](https://docs.wax.io/build/tutorials/howto_atomicassets/mutabledata) | Action parameters (map, not raw bytes) |
+| [WAX: How-To AtomicAssets](https://docs.wax.io/build/tutorials/howto_atomicassets) | Standard overview |
+| [WAX: Minting NFTs](https://docs.wax.io/build/tutorials/howto_atomicassets/mint_nft) | Initial mutable vs immutable |
+| [WAX API reference](https://docs.wax.io/build/api-reference/) | Reading asset rows |
 
-## Stack position
+## Stack and related
 
-Layer **1 of 5**. Next: [px-aa-mutable-safe-partial-updater](https://github.com/pixel-journey/px-aa-mutable-safe-partial-updater). Full path: vault [MUTABLE-STACK.md](https://github.com/pixel-journey/px-contract-examples-vault/blob/main/docs/MUTABLE-STACK.md).
+| Repo | Role |
+| --- | --- |
+| **This repo** | Layer 1 — byte codec |
+| [safe-partial-updater](https://github.com/pixel-journey/px-aa-mutable-safe-partial-updater) | Layer 2 — full-map patch |
+| [wax-atomic-template-and-schema-explorer](https://github.com/pixel-journey/wax-atomic-template-and-schema-explorer) | Explorer parity for int8/float hex |
+| [MUTABLE-STACK.md](https://github.com/pixel-journey/px-contract-examples-vault/blob/main/docs/MUTABLE-STACK.md) | Learning order |
