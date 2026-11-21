@@ -20,17 +20,27 @@ Malformed bytes **fail closed** (throw). The codec never invents default attribu
 | Partial map wipe on write | [safe-partial-updater](https://github.com/pixel-journey/px-aa-mutable-safe-partial-updater) |
 | Wrong editor / collection auth | Collection authorized_editor + `require_auth` |
 | Type confusion (string into uint) | Schema-aware serialize; [all-primitive-types](https://github.com/pixel-journey/px-aa-mutable-all-primitive-types) |
-| Trusting client-supplied “previous” bytes | Load asset row on contract |
+| Trusting client-supplied "previous" bytes | Load asset row on contract |
 | Hand-edited hex without format | Always pair bytes with `schema.format` |
 | Lab caps as consensus | String/vector limits are teaching caps — check AtomicAssets |
 
 ## Attack angles
 
-1. Treating omit and empty vector as the same (empty vector still writes id + `0x00`).
-2. Splicing only the changed key’s bytes over an old blob (desyncs later fields).
-3. Decoding without the schema format (ids are indices, not names).
-4. Silently masking out-of-range values instead of throwing.
+1. Treating omit and empty vector as the same (empty vector still writes id + `0x00`).  
+2. Splicing only the changed key's bytes over an old blob (desyncs later fields).  
+3. Decoding without the schema format (ids are indices, not names).  
+4. Silently masking out-of-range values instead of throwing.  
+5. Calling the codec a live `setassetdata` path.
 
 ## Honesty limits
 
-Codec only. Official: [Serialization wiki](https://github.com/pinknetworkx/atomicassets-contract/wiki/Serialization) · [atomicassets-contract](https://github.com/pinknetworkx/atomicassets-contract). Stack: [MUTABLE-STACK](https://github.com/pixel-journey/px-contract-examples-vault/blob/main/docs/MUTABLE-STACK.md).
+Codec only.
+
+| Sibling | Distinction |
+| --- | --- |
+| [safe-partial-updater](https://github.com/pixel-journey/px-aa-mutable-safe-partial-updater) | Spread previous; wipe detector |
+| [all-primitive-types](https://github.com/pixel-journey/px-aa-mutable-all-primitive-types) | Kind-match primitives |
+| [vector CRUD](https://github.com/pixel-journey/px-aa-mutable-vector-arrays-crud) | Erase shifts |
+| [rpg xp](https://github.com/pixel-journey/px-aa-mutable-rpg-xp-and-leveling) | Game layer; refuse new keys |
+
+Official: [Serialization wiki](https://github.com/pinknetworkx/atomicassets-contract/wiki/Serialization) · [atomicassets-contract](https://github.com/pinknetworkx/atomicassets-contract) · [docs.wax.io mutable data](https://docs.wax.io/build/tutorials/howto_atomicassets/mutabledata).
